@@ -1,0 +1,30 @@
+# Build artifacts
+build/
+*.a
+*.o
+*.d
+
+# Test fixtures (generated)
+tests/fixtures/ecc256.der
+tests/fixtures/pubkey.der
+tests/fixtures/dummy.bin
+tests/fixtures/dummy.wmdl
+tests/fixtures/mobilenet*
+
+# Python
+venv/
+__pycache__/
+*.pyc
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*~
+
+# Claude
+.claude/
+CLAUDE.md
+
+# OS
+.DS_Store
