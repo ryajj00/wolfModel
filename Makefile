@@ -119,7 +119,7 @@ LIB     := libwolfmodel.a
 OBJS    := build/wolfmodel.o
 PREFIX  ?= /usr/local
 
-.PHONY: all clean test fixtures keytools examples install cppcheck
+.PHONY: all clean test fixtures keytools examples examples-stm32h5 install cppcheck
 
 all: $(LIB)
 
@@ -188,6 +188,9 @@ examples: $(LIB)
 	@$(CC) $(CFLAGS) -o build/wolfmodel_verify \
 		examples/basic_verify/main.c $(LIB) $(LDFLAGS)
 	@echo "Built: build/wolfmodel_verify"
+
+examples-stm32h5:
+	$(MAKE) -C examples/tpm_verify/stm32h5
 
 # ------------------------------------------------------------------ #
 # Install                                                            #

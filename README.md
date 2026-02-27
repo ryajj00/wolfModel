@@ -124,6 +124,24 @@ Options for `wolfmodel_sign`:
 | `wolfModel_GetAIBOMUrl()` | Return AIBOM URL string if present |
 | `wolfModel_Free()` | Release wolfCrypt resources, zero status flags (no free) |
 
+## Hardware Ports
+
+wolfModel includes a TPM verification example that demonstrates the full
+chain of trust: model verification + TPM PCR measurement. The example is
+portable across platforms with wolfTPM support.
+
+| Platform | TPM Board | Status | Guide |
+|----------|-----------|--------|-------|
+| Raspberry Pi 5 | STPM4RasPIV2 (ST33GTPMISPI) | **Working** | [Pi 5 Port Guide](examples/tpm_verify/ports/pi5/) |
+| NUCLEO-H573ZI | STPM4RasPIV2 (ST33GTPMISPI) | Work-in-progress | Coming soon |
+
+The [STPM4RasPIV2](https://www.st.com/resource/en/data_brief/stpm4raspiv21.pdf)
+board plugs directly onto the Raspberry Pi GPIO header (pins 1-26) and
+provides both SPI and I2C TPM interfaces via a selector jumper.
+
+See [`examples/tpm_verify/`](examples/tpm_verify/) for the example source and
+build instructions.
+
 ## License
 
 GPLv3 -- see [LICENSE](LICENSE) file. Copyright (C) 2006-2025 wolfSSL Inc.
